@@ -130,6 +130,26 @@ def get_post_by_id(post_id):
         print(f"Error retrieving item: {e.response['Error']['Message']}")
         pass
 
+def get_comments_by_id(post_id):
+    table = dynamodb.Table(os.getenv("COMMENTS"))
+
+    try:
+        response = table.scan(
+            
+            FilterExpression=boto3.dynamodb.conditions.Attr('post_id').eq(post_id)
+
+        )
+        #print(response)
+
+        if len(response['Items']) > 0:
+            return response['Items']
+        else:
+            return None
+        
+        
+    except ClientError as e:
+        print(f"Error retrieving item: {e.response['Error']['Message']}")
+        pass
 
 
 

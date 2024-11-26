@@ -3,7 +3,7 @@ from flask_cors import CORS # type: ignore
 import base64
 import boto3 # type: ignore
 from io import BytesIO
-from functions import upload_file_to_s3, generate_file_name, insert_into_db, get_all_posts, get_post_by_id, insert_comment
+from functions import upload_file_to_s3, generate_file_name, insert_into_db, get_all_posts, get_post_by_id, insert_comment, get_comments_by_id
 import stripe # type: ignore
 from datetime import datetime
 import asyncio
@@ -64,12 +64,21 @@ def upload_file():
         return jsonify({"error": "failed to upload the file"}), 500
 
 
+#returns details specific to a post
 @app.route('/post-details', methods=['GET'])
 def post_details():
     post_id = request.args.get('post_id')
     response = get_post_by_id(post_id)
     return jsonify(response)
+
+#returns comments specific to a post
+@app.route('/get-comments', methods=['GET'])
+def get_post_comments():
+    post_id = request.args.get('post_id')
+    response = get_comments_by_id(post_id)
+    return jsonify(response)
     
+#creates a comment
 @app.route('/create-comment', methods=['POST'])
 def create_comment():
     data = request.json
@@ -78,7 +87,7 @@ def create_comment():
         comment_body = data.get("comment_body")
         author = data.get("author")
 
-        insert_comment(post_id, comment_body, author)
+        insert_comment(post_id, author, comment_body)
         print("created comment successfully!!!")
     
     except Exception as e:
@@ -86,6 +95,7 @@ def create_comment():
 
     return jsonify({"message": "success"})
 
+#http://34.201.173.137:3000/
 @app.route('/create-report', methods=['POST'])
 def create_report():
     data = request.json
